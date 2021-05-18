@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
@@ -30,8 +30,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
-  TabController _tabController;
-  ScrollController _scrollViewController;
+  late TabController _tabController;
+  late ScrollController _scrollViewController;
 
   final List<String> _list = [
     '0',
@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage>
     _items = _list.toList();
   }
 
-  List _items;
+  var _items = <String>[];
 
   final GlobalKey<TagsState> _tagStateKey = GlobalKey<TagsState>();
 
@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage>
                       decoration: BoxDecoration(
                           border: Border(
                               bottom: BorderSide(
-                                  color: Colors.grey[300], width: 0.5))),
+                                  color: Colors.grey[300]!, width: 0.5))),
                       margin:
                           EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       child: ExpansionTile(
@@ -188,12 +188,15 @@ class _MyHomePageState extends State<MyHomePage>
                               Padding(
                                 padding: EdgeInsets.all(5),
                               ),
-                              DropdownButton(
+                              DropdownButton<int>(
                                 hint: _column == 0
                                     ? Text("Not set")
                                     : Text(_column.toString()),
                                 items: _buildItems(),
                                 onChanged: (a) {
+                                  if (a == null) { 
+                                    return;
+                                  }
                                   setState(() {
                                     _column = a;
                                   });
@@ -337,7 +340,7 @@ class _MyHomePageState extends State<MyHomePage>
                       decoration: BoxDecoration(
                           border: Border(
                               bottom: BorderSide(
-                                  color: Colors.grey[300], width: 0.5))),
+                                  color: Colors.grey[300]!, width: 0.5))),
                       margin:
                           EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       child: ExpansionTile(
@@ -369,10 +372,13 @@ class _MyHomePageState extends State<MyHomePage>
                               Padding(
                                 padding: EdgeInsets.all(20),
                               ),
-                              DropdownButton(
+                              DropdownButton<String>(
                                 hint: Text(_itemCombine),
                                 items: _buildItems2(),
                                 onChanged: (val) {
+                                  if (val == null) {
+                                    return;
+                                  }
                                   setState(() {
                                     _itemCombine = val;
                                   });
@@ -480,6 +486,7 @@ class _MyHomePageState extends State<MyHomePage>
       columns: _column,
       horizontalScroll: _horizontalScroll,
       //verticalDirection: VerticalDirection.up, textDirection: TextDirection.rtl,
+      alignment: WrapAlignment.start,
       heightHorizontalScroll: 60 * (_fontSize / 14),
       itemCount: _items.length,
       itemBuilder: (index) {
@@ -490,7 +497,7 @@ class _MyHomePageState extends State<MyHomePage>
           index: index,
           title: item,
           pressEnabled: true,
-          activeColor: Colors.blueGrey[600],
+          activeColor: Colors.blueGrey[600]!,
           singleItem: _singleItem,
           splashColor: Colors.green,
           combine: ItemTagsCombine.withTextBefore,
@@ -528,18 +535,25 @@ class _MyHomePageState extends State<MyHomePage>
           textStyle: TextStyle(
             fontSize: _fontSize,
           ),
-          onPressed: (item) => print(item),
+          onPressed: (item) {
+            print('did select item: ' + item.toString());
+          },
         );
       },
     );
   }
 
   // Position for popup menu
-  Offset _tapPosition;
+  Offset? _tapPosition;
 
   Widget get _tags2 {
     //popup Menu
-    final RenderBox overlay = Overlay.of(context).context?.findRenderObject();
+    RenderBox? overlay;
+    try {
+      overlay = Overlay.of(context)?.context.findRenderObject() as RenderBox;
+    } catch (e) {
+
+    }
 
     ItemTagsCombine combine = ItemTagsCombine.onlyText;
 
@@ -587,7 +601,7 @@ class _MyHomePageState extends State<MyHomePage>
             index: index,
             title: item,
             pressEnabled: false,
-            activeColor: Colors.green[400],
+            activeColor: Colors.green[400]!,
             combine: combine,
             image: index > 0 && index < 5
                 ? ItemTagsImage(image: AssetImage("img/p$index.jpg"))
@@ -601,15 +615,15 @@ class _MyHomePageState extends State<MyHomePage>
                     icon: _icon[int.parse(item)],
                   )
                 : null,
-            removeButton: ItemTagsRemoveButton(
-              backgroundColor: Colors.green[900],
+            removeButton: _removeButton ? ItemTagsRemoveButton(
+              backgroundColor: Colors.green[900]!,
               onRemoved: () {
                 setState(() {
                   _items.removeAt(index);
                 });
                 return true;
               },
-            ),
+            ) : null,
             textScaleFactor:
                 utf8.encode(item.substring(0, 1)).length > 2 ? 0.8 : 1,
             textStyle: TextStyle(
@@ -638,10 +652,9 @@ class _MyHomePageState extends State<MyHomePage>
                 ],
                     context: context,
                     position: RelativeRect.fromRect(
-                        _tapPosition & Size(40, 40),
+                        _tapPosition! & Size(40, 40),
                         Offset.zero &
-                            overlay
-                                .size) // & RelativeRect.fromLTRB(65.0, 40.0, 0.0, 0.0),
+                            (overlay?.size ?? Size.zero)) // & RelativeRect.fromLTRB(65.0, 40.0, 0.0, 0.0),
                     )
                 .then((value) {
               if (value == 1) Clipboard.setData(ClipboardData(text: item));
@@ -691,8 +704,8 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  List<DropdownMenuItem> _buildItems() {
-    List<DropdownMenuItem> list = [];
+  List<DropdownMenuItem<int>> _buildItems() {
+    List<DropdownMenuItem<int>> list = [];
 
     int count = 19;
 
@@ -714,8 +727,8 @@ class _MyHomePageState extends State<MyHomePage>
     return list;
   }
 
-  List<DropdownMenuItem> _buildItems2() {
-    List<DropdownMenuItem> list = [];
+  List<DropdownMenuItem<String>> _buildItems2() {
+    List<DropdownMenuItem<String>> list = [];
 
     list.add(DropdownMenuItem(
       child: Text("onlyText"),
