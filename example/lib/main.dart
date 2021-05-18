@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'dart:math' as math;
 import 'package:flutter_tags/flutter_tags.dart';
 
 void main() => runApp(MyApp());
@@ -498,6 +498,7 @@ class _MyHomePageState extends State<MyHomePage>
           title: item,
           pressEnabled: true,
           activeColor: Colors.blueGrey[600]!,
+          active:  item == 'Gauss',
           singleItem: _singleItem,
           splashColor: Colors.green,
           combine: ItemTagsCombine.withTextBefore,
@@ -601,7 +602,8 @@ class _MyHomePageState extends State<MyHomePage>
             index: index,
             title: item,
             pressEnabled: false,
-            activeColor: Colors.green[400]!,
+            activeColor: Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0),
+            elevation: 0,
             combine: combine,
             image: index > 0 && index < 5
                 ? ItemTagsImage(image: AssetImage("img/p$index.jpg"))
