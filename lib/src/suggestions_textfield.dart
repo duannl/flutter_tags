@@ -158,6 +158,9 @@ class _SuggestionsTextFieldState extends State<SuggestionsTextField> {
     } else if (str.isNotEmpty) {
       if (onSubmitted != null) onSubmitted(str);
       _controller.clear();
+    } else {
+      _focusNode.unfocus();
+      return;
     }
 
     if (_focusAfterSubmit) {
